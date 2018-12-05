@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 )
 
+// init set configurations for log information
 func init() {
 	log.SetPrefix("DEBUG: ")
 	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Lshortfile)
@@ -13,18 +12,10 @@ func init() {
 
 // main is the entry point for the program
 func main() {
-	fmt.Println("Welcome to my first blockchain")
-
+	// fmt.Println("Welcome to my first blockchain")
 	bc := NewBlockchain()
+	defer bc.db.Close()
 
-	bc.AddBlock("Send 1 BTC to bigOmega")
-	bc.AddBlock("Send 2 more BTC to bigOmega")
-
-	for _, block := range bc.blocks {
-		fmt.Printf("\nPrevHash: %x\n", block.PrevBlockHash)
-		fmt.Printf("Data: %s\n", block.Data)
-		fmt.Printf("Hash: %x\n", block.Hash)
-		fmt.Printf("PoW: %s", strconv.FormatBool(NewProofOfWork(block).Validate()))
-		fmt.Println()
-	}
+	cli := &CLI{bc}
+	cli.Run()
 }
