@@ -12,7 +12,7 @@ var (
 	maxNonce = math.MaxInt64
 )
 
-const targetBits = 11
+const targetBits = 15
 
 // proofOfWork is an entity serving for Proof of Work
 type proofOfWork struct {
