@@ -14,11 +14,11 @@ type CLI struct {
 
 // printUsage prints out usage information
 func (cli *CLI) printUsage() {
-	fmt.Printf("\n--------------------------------------------------------------------------------------\n")
+	fmt.Println("--------------------------------------------------------------------------------")
 	fmt.Println("Usage:")
 	fmt.Println("	addblock -data BLOCK_DATA: add a new block to the blockchain")
 	fmt.Println("	printchain: print all the blocks in the blockchain")
-	fmt.Println("--------------------------------------------------------------------------------------")
+	fmt.Println("--------------------------------------------------------------------------------")
 }
 
 // validateArgs checks whether the input is valid
