@@ -18,7 +18,6 @@ func (bci *BlockchainIterator) Next() *Block {
 
 	err := bci.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
-		// TODO: Why can't I use the block struct itself here?
 		block = DeserializeBlock(b.Get(bci.currentHash))
 
 		return nil
