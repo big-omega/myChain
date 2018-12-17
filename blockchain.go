@@ -19,18 +19,18 @@ type Blockchain struct {
 }
 
 // FindSpendableOutputs returns a collection of spendable transaction outputs for the given address and amount
-func (bc *Blockchain) FindSpendableOutputs(address string, amt int) (int, map[string][]int) {
+func (bc *Blockchain) FindSpendableOutputs(pubKeyHash []byte, amt int) (int, map[string][]int) {
 	spendableOutputs := make(map[string][]int)
 	total := 0
 
-	unspentTXs := bc.FindUnspentTransitions(address)
+	unspentTXs := bc.FindUnspentTransitions(pubKeyHash)
 
 Collect:
 	for _, tx := range unspentTXs {
 		txID := hex.EncodeToString(tx.ID)
 
 		for i, out := range tx.Vout {
-			if out.CanBeUnlockedWith(address) {
+			if out.IsLockedWithKey(pubKeyHash) {
 				total += out.Value
 				spendableOutputs[txID] = append(spendableOutputs[txID], i)
 
@@ -45,7 +45,7 @@ Collect:
 }
 
 // FindUnspentTransitions returns a list of unspent transactions containing unspent outputs
-func (bc *Blockchain) FindUnspentTransitions(address string) []Transaction {
+func (bc *Blockchain) FindUnspentTransitions(pubKeyHash []byte) []Transaction {
 	var unspentTXs []Transaction
 	spentTXO := make(map[string][]int)
 	bci := bc.Iterator()
@@ -64,13 +64,13 @@ func (bc *Blockchain) FindUnspentTransitions(address string) []Transaction {
 					}
 				}
 
-				if out.CanBeUnlockedWith(address) {
+				if out.IsLockedWithKey(pubKeyHash) {
 					unspentTXs = append(unspentTXs, *tx)
 				}
 
 				if !tx.IsCoinbase() {
 					for _, in := range tx.Vin {
-						if in.CanUnlockOutputWith(address) {
+						if in.UseKey(pubKeyHash) {
 							inTxID := hex.EncodeToString(in.Txid)
 							spentTXO[inTxID] = append(spentTXO[inTxID], in.OutIndex)
 						}
@@ -87,13 +87,13 @@ func (bc *Blockchain) FindUnspentTransitions(address string) []Transaction {
 }
 
 // FindUTXOs finds and returns all unspent transaction outputs
-func (bc *Blockchain) FindUTXOs(address string) []TXOutput {
+func (bc *Blockchain) FindUTXOs(pubKeyHash []byte) []TXOutput {
 	var UTXOs []TXOutput
-	unspentTXs := bc.FindUnspentTransitions(address)
+	unspentTXs := bc.FindUnspentTransitions(pubKeyHash)
 
 	for _, tx := range unspentTXs {
 		for _, out := range tx.Vout {
-			if out.CanBeUnlockedWith(address) {
+			if out.IsLockedWithKey(pubKeyHash) {
 				UTXOs = append(UTXOs, out)
 			}
 		}
@@ -197,7 +197,7 @@ func dbExists() bool {
 // GetBlockchain returns the current blockchain instance
 func GetBlockchain() *Blockchain {
 	if !dbExists() {
-		log.Panicln("No existing blockchain found, please Create one first")
+		log.Println("No existing blockchain found, please Create one first")
 		os.Exit(1)
 	}
 
